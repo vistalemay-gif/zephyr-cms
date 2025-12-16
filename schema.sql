@@ -1,0 +1,17 @@
+-- schema.sql
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+username TEXT UNIQUE,
+password TEXT,
+role TEXT
+);
+
+
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+name TEXT,
+phone TEXT,
+notes TEXT
+);

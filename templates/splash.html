@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zephyr CMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="manifest" href="{{ url_for('manifest') }}">
+</head>
+<body class="centered splash-bg">
+    <div class="splash-container">
+        <img src="{{ url_for('static', filename='icon-192.png') }}" alt="Zephyr Logo" class="splash-logo">
+        <h1 class="splash-title">Welcome</h1>
+        <p class="splash-subtitle">Managing customers made simple</p>
+    </div>
+    <script>
+        setTimeout(() => {
+            window.location.href = "{{ url_for('login') }}";
+        }, 5000); // 3 seconds
+    </script>
+</body>
+</html>
