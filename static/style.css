@@ -1,40 +1,133 @@
+/* ------------------ GENERAL ------------------ */
 body {
-  font-family: Arial, sans-serif;
-  padding: 1rem;
-  background: #f4f4f4;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 50;
+    padding: 10;
+    background-color: #8d8df5;
+    color: #333;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* ------------------ SPLASH ------------------ */
+.splash-bg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #4facfe 0%, #7adc5c 100%);
+    color: white;
+    text-align: center;
+}
+.splash-logo { width: 250px; margin-bottom: 50px; }
+.splash-title { font-size: 2.2em; margin-bottom: 10px; }
+.splash-subtitle { font-size: 1.2em; }
+
+/* ------------------ LOGIN ------------------ */
+.login-bg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #4e848c;
+}
+.login-container {
+    background: rgb(227, 117, 117);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    text-align: center;
+}
+.login-logo { width: 220px; margin-bottom: 20px; }
+.login-title { font-size: 2.8em; margin-bottom: 20px; }
+.login-form input {
+    display: block;
+    width: 100%;
+    padding: 1px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+.btn-primary {
+    background-color: #4facfe;
+    color: white;
+    border: none;
+    padding: 1px 2px;
+    margin-top: 3px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.btn-primary:hover { background-color: #00f2fe; }
+.error { color: red; font-weight: bold; }
+
+/* ------------------ DASHBOARD ------------------ */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #2196f3;
+    color: white;
+}
+.btn-logout {
+    background: #f44336;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+}
+.btn-logout:hover { background: #e53935; }
+
+.add-customer-section, .customer-table-section {
+    margin: 10px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-.logout-btn {
-  text-decoration: none;
-  background: #e74c3c;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+.add-customer-form input {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
 }
 
-.stats {
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0;
+.filter-form input {
+    padding: 5px;
+    margin-right: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
 }
 
-.card {
-  background: #111;
-  color: #fff;
-  padding: 1rem;
-  border-radius: 12px;
-  flex: 1;
-  text-align: center;
+.customer-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
 }
+.customer-table th, .customer-table td {
+  border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+.customer-table th {
+    background-color: #4facfe;
+    color: white;
+}
+.btn-delete {
+    background-color: #f44336;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+.btn-delete:hover { background-color: #e53935; }
 
-.add-form,
-.filter-form {
+/* ------------------ RESPONSIVE ------------------ */
+@media (max-width: 768px) {
+    .add-customer-form input, .filter-form input {
+        width: 90%;
+    }
+    .dashboard-header { flex-direction: column; gap: 10px; }
+}.filter-form {
   margin: 1rem 0;
   display: flex;
   gap: 0.5rem;
