@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Archived Customers</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<h1>Archived Customers</h1>
+
+<a href="{{ url_for('dashboard') }}">← Back</a>
+
+<table class="customer-table">
+  <tr>
+    <th>ID</th><th>Name</th><th>Date</th><th>Action</th>
+  </tr>
+  {% for c in customers %}
+  <tr>
+    <td>{{ c.id }}</td>
+    <td>{{ c.name }}</td>
+    <td>{{ c.visit_date }}</td>
+    <td>
+      <a href="{{ url_for('restore_customer', id=c.id) }}">Restore</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>
