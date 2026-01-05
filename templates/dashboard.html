@@ -1,55 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard - Zephyr CMS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="manifest" href="{{ url_for('manifest') }}">
+  <meta charset="UTF-8">
+  <title>Zephyr CMS – Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <header class="dashboard-header">
-        <h1>Welcome, {{ session['user'] }}</h1>
-        <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
-    </header>
 
-    <section class="add-customer-section">
-        <h2>Add Customer</h2>
-        <form method="POST" action="{{ url_for('add_customer') }}" class="add-customer-form">
-            <input type="text" name="name" placeholder="Name" required>
-            <input type="email" name="email" placeholder="Email">
-            <input type="text" name="phone" placeholder="Phone">
-            <input type="date" name="date" value="{{ datetime.today().strftime('%Y-%m-%d') }}">
-            <button type="submit" class="btn-primary">Add</button>
-        </form>
-    </section>
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <h1>Zephyr Dashboard</h1>
 
-    <section class="customer-table-section">
-        <h2>Customers</h2>
-        <form method="GET" action="{{ url_for('dashboard') }}" class="filter-form">
-            <label>Filter by date:</label>
-            <input type="date" name="date">
-            <button type="submit" class="btn-primary">Filter</button>
-        </form>
+  <div class="header-actions">
+    {% if session.get('role') == "admin" %}
+      <a href="{{ url_for('activity_logs') }}" class="admin-link">Activity Logs</a>
+    {% endif %}
+    <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+  </div>
+</header>
 
-        <table class="customer-table">
-            <thead>
-                <tr>
-                    <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Date</th><th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in customers %}
-                <tr>
-                    <td>{{ c['id'] }}</td>
-                    <td>{{ c['name'] }}</td>
-                    <td>{{ c['email'] }}</td>
-                    <td>{{ c['phone'] }}</td>
-                    <td>{{ c['date'] }}</td>
-                    <td><a href="{{ url_for('delete_customer', id=c['id']) }}" class="btn-delete">Delete</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </section>
+<!-- ================= STATS ================= -->
+<div class="stats">
+  <div class="card">
+    <h3>Total Customers</h3>
+    <p>{{ total_count or 0 }}</p>
+  </div>
+
+  <div class="card">
+    <h3>Customers Today</h3>
+    <p>{{ daily_count or 0 }}</p>
+  </div>
+
+  <div class="card">
+    <h3>This Month</h3>
+    <p>{{ monthly_count or 0 }}</p>
+  </div>
+</div>
+
+<!-- ================= FILTER ================= -->
+<form method="GET" class="filter-form">
+  <label for="filter-date">Filter by Date:</label>
+  <input type="date" id="filter-date" name="date" value="{{ selected_date }}">
+  <button type="submit">Apply</button>
+
+  {% if session.get('role') == "admin" %}
+    <a href="{{ url_for('export_csv', date=selected_date or '') }}" class="btn secondary">
+      Export CSV
+    </a>
+  {% endif %}
+</form>
+
+<!-- ================= ADD CUSTOMER ================= -->
+<form method="POST" action="{{ url_for('add_customer') }}" class="add-form">
+  <input type="text" name="name" placeholder="Customer Name" required>
+  <input type="text" name="order" placeholder="Order">
+  <input type="number" step="0.01" name="amount" placeholder="Amount">
+  <input type="date" name="visit_date" required>
+  <button type="submit">Add Customer</button>
+</form>
+
+<!-- ================= CUSTOMER TABLE ================= -->
+<table class="customer-table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Order</th>
+      <th>Amount</th>
+      <th>Date</th>
+      {% if session.get('role') == "admin" %}
+        <th>Action</th>
+      {% endif %}
+    </tr>
+  </thead>
+
+  <tbody>
+    {% if customers %}
+      {% for customer in customers %}
+        <tr>
+          <td>{{ customer.name }}</td>
+          <td>{{ customer.order }}</td>
+          <td>{{ customer.amount }}</td>
+          <td>{{ customer.visit_date }}</td>
+
+          {% if session.get('role') == "admin" %}
+          <td>
+            <a href="{{ url_for('archive_customer', id=customer.id) }}"
+               class="danger-link"
+               onclick="return confirm('Archive this customer?')">
+              Archive
+            </a>
+          </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="5" class="empty">No customers found.</td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <p>
+    Logged in as: <strong>{{ session.get('user', 'Unknown') }}</strong>
+    ({{ session.get('role', 'user') | capitalize }})
+  </p>
+</footer>
+
 </body>
 </html>
