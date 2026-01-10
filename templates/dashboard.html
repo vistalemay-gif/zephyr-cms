@@ -9,12 +9,13 @@
 <body>
 
 <header class="header">
-  <h1>🍔 Zephyr Resto Dashboard</h1>
+  <h1>🍔 Busog Pinas Dashboard</h1>
   <div class="dashboard-greeting">
-  Hello {{ session.get('role') | capitalize }} ({{ display_name }})
-</div>
+    Hello {{ session.get('role') | capitalize }} ({{ display_name }})
+  </div>
   <div class="dashboard-actions">
     <a href="{{ url_for('add_customer_page') }}">➕ Add Customer</a>
+    <a href="{{ url_for('customer_records') }}">📅 View Old Records</a>
     <a href="{{ url_for('view_feedback') }}">💬 Feedback</a>
     <a href="{{ url_for('profile') }}">👤 Profile</a>
     {% if session.get('role') == "admin" %}
@@ -27,9 +28,9 @@
 
 <section class="stats-bar">
   <div class="stat-card">
-  <span>Customers Today</span>
-  <strong>{{ today_count }}</strong>
-</div>
+    <span>Customers Today</span>
+    <strong>{{ today_count }}</strong>
+  </div>
   <div class="stat-card">
     <span>Total Earnings</span>
     <strong>₱{{ total_earnings }}</strong>
@@ -45,50 +46,49 @@
 </section>
 
 <section class="dashboard-section">
-  <h2>Customers</h2>
+  <h2>Today's Customers</h2>
 
   {% if customers %}
   <table class="customer-table">
     <thead>
-  <tr>
-    <th>Name</th>
-    <th>Order</th>
-    <th>Total Amount</th>
-    <th>Visit Date</th>
-    <th>Action</th> <!-- ✅ ADD THIS -->
-  </tr>
-</thead>
+      <tr>
+        <th>Name</th>
+        <th>Order</th>
+        <th>Total Amount</th>
+        <th>Visit Date</th>
+        <th>Visits</th>
+        <th>Category</th>
+        <th>Action</th>
+      </tr>
+    </thead>
     <tbody>
       {% for c in customers %}
       <tr>
-  <td>{{ c.name }}</td>
-  <td>{{ c.order_name }}</td>
-  <td><strong>₱ {{ "%.2f"|format(c.amount) }}</strong></td>
-  <td>{{ c.visit_date }}</td>
-
-  <!-- ✅ DELETE BUTTON -->
-  <td>
-    <form method="POST"
-          action="{{ url_for('delete_customer', customer_id=c.id) }}"
-          onsubmit="return confirm('Are you sure you want to delete this customer?');">
-      <button type="submit"
-              style="background:#ff4d4d;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">
-        🗑 Delete
-      </button>
-    </form>
-  </td>
-</tr>
+        <td>{{ c.name }}</td>
+        <td>{{ c.order_name }}</td>
+        <td><strong>₱ {{ "%.2f"|format(c.amount) }}</strong></td>
+        <td>{{ c.visit_date }}</td>
+        <td>{{ c.visit_count }}</td>
+        <td>{{ c.category }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('delete_customer', customer_id=c.id) }}"
+            onsubmit="return confirm('Are you sure you want to delete this customer?');">
+            <button type="submit" style="background:#ff4d4d;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">
+              🗑 Delete
+            </button>
+          </form>
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
   {% else %}
-    <p>No customers yet.</p>
+    <p>No customers yet today.</p>
   {% endif %}
 </section>
 
 <footer class="footer">
-  Logged in as <strong>{{ session.get('user') }}</strong>
-  ({{ session.get('role') | capitalize }})
+  Logged in as <strong>{{ session.get('user') }}</strong> ({{ session.get('role') | capitalize }})
 </footer>
 
 </body>
