@@ -1,9 +1,9 @@
 /* ------------------ GENERAL ------------------ */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 50;
-    padding: 10;
-    background-color: #8d8df5;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6fb; /* clean dashboard canvas */
     color: #333;
 }
 
@@ -38,127 +38,212 @@ body {
 }
 .login-logo { width: 220px; margin-bottom: 20px; }
 .login-title { font-size: 2.8em; margin-bottom: 20px; }
+
 .login-form input {
     display: block;
     width: 100%;
-    padding: 1px;
+    padding: 10px;
     margin: 8px 0;
     border-radius: 6px;
     border: 1px solid #ccc;
 }
+
 .btn-primary {
     background-color: #4facfe;
     color: white;
     border: none;
-    padding: 1px 2px;
-    margin-top: 3px;
+    padding: 10px;
+    margin-top: 10px;
     border-radius: 6px;
     cursor: pointer;
 }
 .btn-primary:hover { background-color: #00f2fe; }
-.error { color: red; font-weight: bold; }
 
-/* ------------------ DASHBOARD ------------------ */
-.dashboard-header {
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+/* ------------------ DASHBOARD HEADER ------------------ */
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background-color: #2196f3;
+    padding: 14px 18px;
+    background-color: #d85b82; /* refined pink */
     color: white;
+    border-radius: 10px;
+    margin: 12px;
 }
-.btn-logout {
-    background: #f44336;
-    padding: 8px 16px;
+
+.dashboard-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dashboard-actions a {
+    background: #374151;
+    color: #ffffff;
+    padding: 6px 14px;
     border-radius: 6px;
-    color: white;
     text-decoration: none;
-}
-.btn-logout:hover { background: #e53935; }
-
-.add-customer-section, .customer-table-section {
-    margin: 10px;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    font-size: 0.9rem;
 }
 
-.add-customer-form input {
-    padding: 10px;
-    margin: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+.dashboard-actions a:hover {
+    background: #4b5563;
 }
 
-.filter-form input {
-    padding: 5px;
-    margin-right: 5px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+.logout-btn {
+    background: #b91c1c;
 }
 
-.customer-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+.logout-btn:hover {
+    background: #991b1b;
 }
-.customer-table th, .customer-table td {
-  border: 1px solid #ccc;
-    padding: 10px;
+
+/* ------------------ DASHBOARD STATS ------------------ */
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 20px;
+}
+
+.stat-card {
+    background: #f7b1c3;
+    color: #2f2f2f;
+    padding: 1.2rem;
+    border-radius: 10px;
     text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
 }
-.customer-table th {
-    background-color: #4facfe;
-    color: white;
-}
-.btn-delete {
-    background-color: #f44336;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 6px;
-    text-decoration: none;
-}
-.btn-delete:hover { background-color: #e53935; }
 
-/* ------------------ RESPONSIVE ------------------ */
-@media (max-width: 768px) {
-    .add-customer-form input, .filter-form input {
-        width: 90%;
-    }
-    .dashboard-header { flex-direction: column; gap: 10px; }
-}.filter-form {
-  margin: 1rem 0;
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+.stat-card span {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a4a4a;
+    margin-bottom: 0.3rem;
+}
+
+.stat-card strong {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f1f1f;
+}
+
+/* ------------------ FORMS ------------------ */
+.filter-form {
+    margin: 1rem 20px;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.add-form {
+    margin: 1rem 20px;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .add-form input,
 .filter-form input {
-  padding: 0.5rem;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
 }
 
 button {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
 }
 
+/* ------------------ TABLE ------------------ */
 .customer-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-  background: white;
+    width: calc(100% - 40px);
+    margin: 20px;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
 }
 
 .customer-table th,
 .customer-table td {
-  border: 1px solid #ddd;
-  padding: 0.5rem;
-  text-align: center;
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
 }
 
 .customer-table th {
-  background: #222;
+    background-color: #4facfe;
+    color: white;
+}
+
+.customer-table tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+/* ------------------ ACTION LINKS ------------------ */
+.customer-table a {
+    color: #b91c1c;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.customer-table a:hover {
+    text-decoration: underline;
+}
+
+/* ------------------ FOOTER ------------------ */
+.footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* ------------------ RESPONSIVE ------------------ */
+@media (max-width: 900px) {
+    .stats-bar {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-actions {
+        justify-content: center;
+    }
+}
+.stat-card {
+    background: #ea8da4; /* existing color */
+    color: #fff;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.stat-card strong {
+    display: block;
+    font-size: 1.2rem;
+    margin-top: 0.3rem;
+}
+
+.delete-btn {
+  background: #d9534f;
   color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.delete-btn:hover {
+  background: #c9302c;
 }
