@@ -40,7 +40,10 @@ MENU_PRICES = {
 # ---------------- DATABASE ----------------
 def get_db():
     if "_db" not in g:
-        g._db = sqlite3.connect(DATABASE)
+        g._db = sqlite3.connect(
+            DATABASE,
+            check_same_thread=False
+        )
         g._db.row_factory = sqlite3.Row
     return g._db
 
@@ -117,29 +120,30 @@ def init_db():
 if not os.path.exists(DATABASE):
     with app.app_context():
         init_db()
+    
 with app.app_context():
     db = get_db()
-    for column in ["full_name", "phone", "email"]:
-        try:
-            db.execute(f"ALTER TABLE users ADD COLUMN {column} TEXT")
-            db.commit()
-            print(f"{column} column added")
-        except sqlite3.OperationalError:
-            print(f"{column} column already exists")
-        
+    # Add full_name, phone, email columns if they don't exist
+    try:
+        db.execute("ALTER TABLE users ADD COLUMN full_name TEXT")
+        db.execute("ALTER TABLE users ADD COLUMN phone TEXT")
+        db.execute("ALTER TABLE users ADD COLUMN email TEXT")
+        db.commit()
+        print("Added missing profile columns to users table")
+    except sqlite3.OperationalError:
+        # Columns already exist
+        print("Profile columns already exist")
+
 with app.app_context():
     db = get_db()
     try:
-        db.execute("ALTER TABLE users ADD COLUMN display_name TEXT")
+        db.execute("ALTER TABLE customers ADD COLUMN visit_count INTEGER DEFAULT 1")
+        db.execute("ALTER TABLE customers ADD COLUMN category TEXT DEFAULT 'New'")
+        db.execute("ALTER TABLE customers ADD COLUMN notes TEXT")
         db.commit()
-        print("display_name column added successfully!")
+        print("Added missing columns to customers table")
     except sqlite3.OperationalError:
-        print("display_name column already exists.")
-        
-with app.app_context():
-    db = get_db()
-    db.execute("UPDATE users SET display_name=? WHERE username=?", ("Admin", "admin"))
-    db.commit()
+        print("Customers table columns already exist")
 
 # ---------------- LOGGING ----------------
 def log_action(user, action):
@@ -175,18 +179,19 @@ def login():
 @app.route("/dashboard")
 def dashboard():
     from datetime import date
+
     today = date.today().isoformat()
-
-    if "user" not in session:
-        return redirect(url_for("login"))
-
     db = get_db()
-    
+
+# Archive all previous records automatically
+    db.execute("UPDATE customers SET archived=1 WHERE visit_date < ?", (today,))
+    db.commit()
+
     # Customers
     customers = db.execute(
-    "SELECT * FROM customers WHERE archived=0"
-    
+    "SELECT * FROM customers WHERE archived=0 ORDER BY visit_date DESC"
 ).fetchall()
+
     customers = db.execute(
     "SELECT * FROM customers ORDER BY visit_date DESC"
 ).fetchall()
@@ -225,6 +230,7 @@ def dashboard():
     (month_start,)
 ).fetchone()[0] or 0
 
+
     return render_template(
     "dashboard.html",
     customers=customers,
@@ -244,6 +250,8 @@ def add_customer_page():
 def add_customer():
     if "user" not in session:
         return redirect(url_for("login"))
+    
+    db = get_db()
 
     name = request.form.get("name")
     visit_date = request.form.get("visit_date")
@@ -264,16 +272,41 @@ def add_customer():
         total_amount += line_total
         orders.append(f"{otype} x{qty}")
 
-    db = get_db()
-    db.execute("""
-        INSERT INTO customers (name, order_name, amount, visit_date)
-        VALUES (?, ?, ?, ?)
+    existing = db.execute(
+    "SELECT id, visit_count FROM customers WHERE name=? AND archived=0",
+    (name,)
+).fetchone()
+
+    if existing:db.execute("""
+        UPDATE customers
+        SET visit_count = visit_count + 1,
+            amount = amount + ?,
+            visit_date = ?
+        WHERE id=?
+    """, (total_amount, visit_date, existing["id"]))
+    else:
+     db.execute("""
+        INSERT INTO customers
+        (name, order_name, amount, visit_date, visit_count, category)
+        VALUES (?, ?, ?, ?, ?, ?)
     """, (
         name,
         " | ".join(orders),
         total_amount,
-        visit_date
+        visit_date,
+        1,
+        "New"
     ))
+
+# AUTO CATEGORY
+    db.execute("""
+    UPDATE customers
+    SET category = CASE
+        WHEN visit_count >= 10 THEN 'VIP'
+        WHEN visit_count >= 5 THEN 'Regular'
+        ELSE 'New'
+    END
+    """)
     db.commit()
 
     log_action(session["user"], "Added customer")
@@ -311,7 +344,10 @@ def view_feedback():
 def archived_customers():
     if "user" not in session or session.get("role") != "admin":
         return redirect(url_for("dashboard"))
-    customers = get_db().execute("SELECT * FROM customers WHERE archived=1").fetchall()
+
+    db = get_db()
+    # Only fetch archived customers
+    customers = db.execute("SELECT * FROM customers WHERE archived=1").fetchall()
     return render_template("archived_customers.html", customers=customers)
 
 # Activity Logs (Admin only)
@@ -377,6 +413,18 @@ def change_password():
     flash("Password changed successfully!", "success")
     return redirect(url_for("profile"))
 
+@app.route("/archive_customer/<int:customer_id>", methods=["POST"])
+def archive_customer(customer_id):
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+    db.execute("UPDATE customers SET archived=1 WHERE id=?", (customer_id,))
+    db.commit()
+
+    log_action(session["user"], f"Archived customer ID {customer_id}")
+    return redirect(url_for("dashboard"))
+
 @app.route("/delete_customer/<int:customer_id>", methods=["POST"])
 def delete_customer(customer_id):
     if "user" not in session:
@@ -388,6 +436,24 @@ def delete_customer(customer_id):
 
     log_action(session["user"], f"Deleted customer ID {customer_id}")
     return redirect(url_for("dashboard"))
+
+@app.route("/customer_records", methods=["GET", "POST"])
+def customer_records():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+    selected_date = None
+    records = []
+
+    if request.method == "POST":
+        selected_date = request.form.get("date")
+        records = db.execute(
+            "SELECT * FROM customers WHERE visit_date=? ORDER BY visit_date DESC",
+            (selected_date,)
+        ).fetchall()
+
+    return render_template("customer_records.html", records=records, selected_date=selected_date)
 
 @app.route("/logout")
 def logout():
