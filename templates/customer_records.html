@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Customer Records</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="header">
+  <h1>📅 Customer Records</h1>
+  <div class="dashboard-actions">
+    <a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
+  </div>
+</header>
+
+<section class="dashboard-section">
+  <form method="POST" style="margin-bottom:20px;">
+    <label for="date">Select Date:</label>
+    <input type="date" name="date" required value="{{ selected_date }}">
+    <button type="submit" style="background:#007bff;color:white;padding:6px 12px;border-radius:6px;">Filter</button>
+  </form>
+
+  {% if selected_date %}
+    <h2>Records for {{ selected_date }}</h2>
+    {% if records %}
+      <table class="customer-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Orders</th>
+            <th>Amount</th>
+            <th>Visit Date</th>
+            <th>Visits</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.order_name }}</td>
+            <td>₱{{ "%.2f"|format(r.amount) }}</td>
+            <td>{{ r.visit_date }}</td>
+            <td>{{ r.visit_count }}</td>
+            <td>{{ r.category }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No records found for this date.</p>
+    {% endif %}
+  {% endif %}
+</section>
+
+<footer class="footer">
+  Logged in as <strong>{{ session.get('user') }}</strong> ({{ session.get('role') | capitalize }})
+</footer>
+
+</body>
+</html>
