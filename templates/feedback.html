@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Feedback - Zephyr CMS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+  .feedback-container { max-width: 500px; margin: 2rem auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+  .feedback-container h2 { text-align:center; margin-bottom:1rem; }
+  .feedback-container input, .feedback-container select, .feedback-container textarea { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; }
+  .feedback-container button { background:#4facfe; color:white; padding:10px 15px; border:none; border-radius:6px; cursor:pointer; }
+  .feedback-container button:hover { background:#00f2fe; }
+</style>
+</head>
+<body>
+  <div class="feedback-container">
+    <h2>Customer Feedback</h2>
+    <form method="POST">
+      <input type="text" name="name" placeholder="Your Name" required>
+      <input type="text" name="order" placeholder="Order Name" required>
+      <label>Rating:</label>
+      <select name="rating" required>
+        <option value="1">1 ⭐</option>
+        <option value="2">2 ⭐⭐</option>
+        <option value="3">3 ⭐⭐⭐</option>
+        <option value="4">4 ⭐⭐⭐⭐</option>
+        <option value="5">5 ⭐⭐⭐⭐⭐</option>
+      </select>
+      <textarea name="comment" placeholder="Your feedback" required></textarea>
+      <button type="submit">Submit Feedback</button>
+    </form>
+    <br>
+    <a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
+  </div>
+</body>
+</html>
