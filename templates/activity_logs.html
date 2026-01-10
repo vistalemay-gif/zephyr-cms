@@ -1,39 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Activity Logs</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<meta charset="UTF-8">
+<title>Activity Logs - Zephyr CMS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+  .logs-table { max-width: 800px; margin:2rem auto; border-collapse: collapse; width:100%; }
+  .logs-table th, .logs-table td { border:1px solid #ddd; padding:8px; text-align:center; }
+  .logs-table th { background:#4facfe; color:white; }
+</style>
 </head>
 <body>
-
-<h1>Activity Logs</h1>
-
-<a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
-
-<table class="customer-table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>User</th>
-      <th>Action</th>
-      <th>Timestamp</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for log in logs %}
-    <tr>
-      <td>{{ log.id }}</td>
-      <td>{{ log.user }}</td>
-      <td>{{ log.action }}</td>
-      <td>{{ log.timestamp }}</td>
-    </tr>
-    {% else %}
-    <tr>
-      <td colspan="4">No activity logs.</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
+  <h2 style="text-align:center;">Activity Logs</h2>
+  <table class="logs-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Action</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if logs %}
+        {% for log in logs %}
+          <tr>
+            <td>{{ log.user }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.timestamp }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr><td colspan="3">No activity logs yet.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <br>
+  <a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
 </body>
 </html>
