@@ -105,7 +105,6 @@ def init_db():
         "INSERT OR IGNORE INTO users VALUES (NULL,?,?,?)",
         ("admin", generate_password_hash("adminpass"), "admin")
     )
-    HEAD
 
     # Add column display_name if not exists
     c.execute("ALTER TABLE users ADD COLUMN display_name TEXT")  # Only if you don't already have it
