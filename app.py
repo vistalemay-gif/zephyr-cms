@@ -5,7 +5,11 @@ from flask import Flask, g, render_template, request, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-DATABASE = os.path.join(APP_DIR, "data.db")
+
+if os.environ.get("RENDER"):
+    DATABASE = "/tmp/data.db"      # Render (Linux)
+else:
+    DATABASE = os.path.join(APP_DIR, "data.db")  # Local (Windows)
 
 app = Flask(__name__)
 app.secret_key = "replace_with_a_random_secret"
@@ -101,7 +105,17 @@ def init_db():
         "INSERT OR IGNORE INTO users VALUES (NULL,?,?,?)",
         ("admin", generate_password_hash("adminpass"), "admin")
     )
+    HEAD
 
+    # Add column display_name if not exists
+    c.execute("ALTER TABLE users ADD COLUMN display_name TEXT")  # Only if you don't already have it
+
+
+    c.execute(
+    "INSERT OR IGNORE INTO users (username, password, role) VALUES (?,?,?)",
+    ("staff", generate_password_hash("staffpass"), "staff")
+    )
+ 
     # Add column display_name if not exists
     c.execute("ALTER TABLE users ADD COLUMN display_name TEXT")  # Only if you don't already have it
 

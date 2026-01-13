@@ -31,3 +31,36 @@
 
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Feedback</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h2>💬 Customer Feedback</h2>
+
+<table class="customer-table">
+  <tr>
+    <th>Name</th>
+    <th>Order</th>
+    <th>Rating</th>
+    <th>Comment</th>
+    <th>Date</th>
+  </tr>
+  {% for f in feedbacks %}
+  <tr>
+    <td>{{ f.name }}</td>
+    <td>{{ f.order_name }}</td>
+    <td>{{ f.rating }} ⭐</td>
+    <td>{{ f.comment }}</td>
+    <td>{{ f.created_at }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<a href="{{ url_for('dashboard') }}">⬅ Back</a>
+
+</body>
+</html>

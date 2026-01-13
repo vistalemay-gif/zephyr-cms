@@ -1,3 +1,111 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Profile</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #111827;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,.4);
+        }
+
+        h2 {
+            text-align: center;
+            color: #38bdf8;
+        }
+
+        .role {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #22c55e;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-top: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background: #38bdf8;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0ea5e9;
+        }
+
+        .divider {
+            margin: 30px 0;
+            border-top: 1px solid #334155;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>👤 My Profile</h2>
+
+    <div class="role">
+        Logged in as: {{ user["role"]|upper }}
+    </div>
+
+    <form method="POST">
+        <label>Full Name</label>
+        <input type="text" name="full_name" value="{{ user['full_name'] or '' }}">
+
+        <label>Phone</label>
+        <input type="text" name="phone" value="{{ user['phone'] or '' }}">
+
+        <label>Email</label>
+        <input type="email" name="email" value="{{ user['email'] or '' }}">
+
+        <button>Save Profile</button>
+    </form>
+
+    <div class="divider"></div>
+
+    <h3>🔒 Change Password</h3>
+    <form method="POST" action="{{ url_for('change_password') }}">
+        <label>Current Password</label>
+        <input type="password" name="current_password" required>
+
+        <label>New Password</label>
+        <input type="password" name="new_password" required>
+
+        <button>Update Password</button>
+    </form>
+</div>
+
+</body>
+</html>
+
 <!DOCTYPE html>
 <html>
 <head>
