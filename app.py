@@ -61,15 +61,21 @@ def init_db():
     db = get_db()
     c = db.cursor()
 
+    # USERS table
     c.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
             password TEXT,
-            role TEXT
+            role TEXT,
+            display_name TEXT,
+            full_name TEXT,
+            phone TEXT,
+            email TEXT
         )
     """)
 
+    # CUSTOMERS table
     c.execute("""
         CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,10 +83,14 @@ def init_db():
             order_name TEXT,
             amount REAL,
             visit_date TEXT,
-            archived INTEGER DEFAULT 0
+            archived INTEGER DEFAULT 0,
+            visit_count INTEGER DEFAULT 1,
+            category TEXT DEFAULT 'New',
+            notes TEXT
         )
     """)
 
+    # FEEDBACK table
     c.execute("""
         CREATE TABLE IF NOT EXISTS feedback (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,6 +102,7 @@ def init_db():
         )
     """)
 
+    # ACTIVITY LOGS
     c.execute("""
         CREATE TABLE IF NOT EXISTS activity_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -101,38 +112,22 @@ def init_db():
         )
     """)
 
+    # Insert default users (ignore if exists)
     c.execute(
-        "INSERT OR IGNORE INTO users VALUES (NULL,?,?,?)",
+        "INSERT OR IGNORE INTO users (username, password, role) VALUES (?,?,?)",
         ("admin", generate_password_hash("adminpass"), "admin")
     )
-
-    # Add column display_name if not exists
-    c.execute("ALTER TABLE users ADD COLUMN display_name TEXT")  # Only if you don't already have it
-
-
     c.execute(
-    "INSERT OR IGNORE INTO users (username, password, role) VALUES (?,?,?)",
-    ("staff", generate_password_hash("staffpass"), "staff")
+        "INSERT OR IGNORE INTO users (username, password, role) VALUES (?,?,?)",
+        ("staff", generate_password_hash("staffpass"), "staff")
     )
- 
-    # Add column display_name if not exists
-    c.execute("ALTER TABLE users ADD COLUMN display_name TEXT")  # Only if you don't already have it
 
-    # Existing tables...
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            role TEXT,
-            display_name TEXT
-        )
-    """)
     db.commit()
 
-if not os.path.exists(DATABASE):
-    with app.app_context():
-        init_db()
+
+# Initialize database on first run
+with app.app_context():
+    init_db()
     
 with app.app_context():
     db = get_db()
