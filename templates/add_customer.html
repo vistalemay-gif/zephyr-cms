@@ -61,10 +61,18 @@ function updateOrderOptions(select) {
   if (!PRICES[type]) return;
 
   const opt = document.createElement("select");
-  opt.onchange = () = updateLineTotal(opt);
+  opt.onchange = () => updateLineTotal(opt);  // fixed arrow function
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.text = "Select Option";
+  opt.appendChild(defaultOption);
 
   for (let key in PRICES[type]) {
-    opt.innerHTML += `<option value="${key}">${key}</option>`;
+    const optionEl = document.createElement("option");
+    optionEl.value = key;
+    optionEl.text = key;
+    opt.appendChild(optionEl);
   }
   optionsDiv.appendChild(opt);
 }
@@ -73,7 +81,7 @@ function updateLineTotal(el) {
   const line = el.closest(".order-line");
   const type = line.querySelector("select[name='order_type[]']").value;
   const option = line.querySelector(".order_options select")?.value;
-  const qty = line.querySelector("input[name='quantity[]']").value;
+  const qty = parseInt(line.querySelector("input[name='quantity[]']").value) || 0;
 
   if (!type || !option) return;
 
@@ -86,9 +94,9 @@ function updateLineTotal(el) {
 
 function calculateTotal() {
   let total = 0;
-  document.querySelectorAll(".order-line").forEach(line = {
-    const qty = line.querySelector("input[name='quantity[]']").value;
-    const amt = line.querySelector("input[name='amount[]']").value;
+  document.querySelectorAll(".order-line").forEach(line => {  // fixed arrow function
+    const qty = parseInt(line.querySelector("input[name='quantity[]']").value) || 0;
+    const amt = parseFloat(line.querySelector("input[name='amount[]']").value) || 0;
     total += qty * amt;
   });
   document.getElementById("total_amount").value = total;
@@ -97,8 +105,9 @@ function calculateTotal() {
 function addOrderLine() {
   const container = document.getElementById("orders_container");
   const clone = container.children[0].cloneNode(true);
-  clone.querySelectorAll("input").forEach(i = i.value = i.name === "quantity[]" ? 1 : 0);
+  clone.querySelectorAll("input").forEach(i => i.value = i.name === "quantity[]" ? 1 : 0);  // fixed
   clone.querySelector(".order_options").innerHTML = "";
+  clone.querySelector("select[name='order_type[]']").selectedIndex = 0;
   container.appendChild(clone);
 }
 </script>
