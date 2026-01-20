@@ -24,17 +24,17 @@
     <tbody>
       {% for c in customers %}
 <tr>
-    <td>{{ c.name }}</td>
-    <td>{{ c.order_name }}</td>
-    <td>₱{{ "%.2f"|format(c.amount) }}</td>
-    <td>{{ c.visit_date }}</td>
-    <td>
-        <!-- Permanently delete -->
-        <form method="POST" action="{{ url_for('delete_archived', customer_id=c.id) }}"
-              onsubmit="return confirm('Are you sure you want to delete this customer permanently?');">
-            <button type="submit">❌ Delete</button>
-        </form>
-    </td>
+  <td>{{ c.name }}</td>
+  <td>{{ c.order_name }}</td>
+  <td>₱ {{ "%.2f"|format(c.amount) }}</td>
+  <td>{{ c.visit_date }}</td>
+  <td>
+    <form action="{{ url_for('delete_customer', customer_id=c.id) }}"
+          method="post"
+          onsubmit="return confirm('Delete permanently?');">
+      <button class="btn-delete">🗑 Delete</button>
+    </form>
+  </td>
 </tr>
 {% endfor %}
     </tbody>
