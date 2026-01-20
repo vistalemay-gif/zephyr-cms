@@ -14,7 +14,9 @@
     Hello {{ session.get('role') | capitalize }} ({{ display_name }})
   </div>
   <div class="dashboard-actions">
-    <a href="{{ url_for('add_customer_page') }}">➕ Add Customer</a>
+    <a href="{{ url_for('add_customer_page') }}" class="btn">
+    ➕ Add Customer
+</a>
     <a href="{{ url_for('customer_records') }}">📅 View Old Records</a>
     <a href="{{ url_for('view_feedback') }}">💬 Feedback</a>
     <a href="{{ url_for('profile') }}">👤 Profile</a>
@@ -56,29 +58,35 @@
         <th>Order</th>
         <th>Total Amount</th>
         <th>Visit Date</th>
-        <th>Visits</th>
         <th>Category</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody>
       {% for c in customers %}
-      <tr>
-        <td>{{ c.name }}</td>
-        <td>{{ c.order_name }}</td>
-        <td><strong>₱ {{ "%.2f"|format(c.amount) }}</strong></td>
-        <td>{{ c.visit_date }}</td>
-        <td>{{ c.visit_count }}</td>
-        <td>{{ c.category }}</td>
-        <td>
-          <form method="POST" action="{{ url_for('delete_customer', customer_id=c.id) }}"
-            onsubmit="return confirm('Are you sure you want to delete this customer?');">
-            <button type="submit" style="background:#ff4d4d;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">
-              🗑 Delete
-            </button>
-          </form>
-        </td>
-      </tr>
+     <tr>
+  <td>{{ c.name }}</td>
+  <td>{{ c.order_name }}</td>
+  <td>₱ {{ "%.2f"|format(c.amount) }}</td>
+  <td>{{ c.visit_date }}</td>
+  <td>
+    <span class="badge {{ 'old' if c.category == 'Old' else 'new' }}">
+      {{ c.category }}
+    </span>
+  </td>
+  <td>
+    <form action="{{ url_for('archive_customer', customer_id=c.id) }}"
+          method="post" style="display:inline;">
+      <button class="btn-archive">📦 Archive</button>
+    </form>
+
+    <form action="{{ url_for('delete_customer', customer_id=c.id) }}"
+          method="post" style="display:inline;"
+          onsubmit="return confirm('Delete permanently?');">
+      <button class="btn-delete">🗑 Delete</button>
+    </form>
+  </td>
+</tr>
       {% endfor %}
     </tbody>
   </table>
