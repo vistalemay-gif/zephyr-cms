@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Approve Users</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h2 style="text-align:center;">Pending Accounts</h2>
+
+<table class="customer-table">
+    <tr>
+        <th>Username</th>
+        <th>Action</th>
+    </tr>
+
+    {% for user in users %}
+    <tr>
+        <td>{{ user.username }}</td>
+        <td>
+            <form method="post" action="{{ url_for('approve_user', user_id=user.id) }}">
+                <button class="btn-primary">Approve</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="{{ url_for('dashboard') }}">⬅ Back</a>
+
+</body>
+</html>
