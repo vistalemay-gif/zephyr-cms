@@ -62,31 +62,3 @@
 
 </body>
 </html>
-            <th>Category</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in records %}
-          <tr>
-            <td>{{ r.name }}</td>
-            <td>{{ r.order_name }}</td>
-            <td>₱{{ "%.2f"|format(r.amount) }}</td>
-            <td>{{ r.visit_date }}</td>
-            <td>{{ r.visit_count }}</td>
-            <td>{{ r.category }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>No records found for this date.</p>
-    {% endif %}
-  {% endif %}
-</section>
-
-<footer class="footer">
-  Logged in as <strong>{{ session.get('user') }}</strong> ({{ session.get('role') | capitalize }})
-</footer>
-
-</body>
-</html>
