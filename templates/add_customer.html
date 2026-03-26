@@ -25,94 +25,15 @@
         <div class="order-line">
           <select name="order_type[]" onchange="updateOrderOptions(this)" required>
             <option value="">Select Order</option>
-            <option value="budbod">Budbod (Rice Meal)</option>
-            <option value="burger">Burger</option>
-            <option value="busog_combo">Busog Combo</option>
-            <option value="fries">Fries</option>
+            <option value="budbod">Budbod (🍚Rice Meal)</option>
+            <option value="burger">🍔Burger</option>
+            <option value="busog_combo">🍔🥤Busog Combo</option>
+            <option value="fries">🍟Fries</option>
           </select>
           <div class="order_options"></div>
           <div class="add_ons"></div>
           <input type="number" name="quantity[]" value="1" min="1" onchange="updateLineTotal(this)">
           <input type="number" name="amount[]" value="0" readonly>
-        </div>
-      </div>
-      <button type="button" onclick="addOrderLine()">+ Add Another Order</button>
-      <h3>Total Amount: ₱<input type="number" id="total_amount" name="total_amount" value="0" readonly></h3>
-      <button type="submit">Add Customer</button>
-    </form>
-    <br>
-    <a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
-  </div>
-
-<script>
-const PRICES = {
-  budbod: { pork:85, chicken:85, hungarian:85, rice:15, egg:15 },
-  burger: { quarter:80, half_pound:155, jalapeno:15, cheese:15, bbq_sauce:15 },
-  busog_combo: { Q1:115, H1:185 },
-  fries: { small:25, medium:35, large:45 }
-};
-
-function updateOrderOptions(select) {
-  const container = select.closest(".order-line");
-  const optionsDiv = container.querySelector(".order_options");
-  optionsDiv.innerHTML = "";
-
-  const type = select.value;
-  if (!PRICES[type]) return;
-
-  const opt = document.createElement("select");
-  opt.onchange = () => updateLineTotal(opt);  // fixed arrow function
-
-  const defaultOption = document.createElement("option");
-  defaultOption.value = "";
-  defaultOption.text = "Select Option";
-  opt.appendChild(defaultOption);
-
-  for (let key in PRICES[type]) {
-    const optionEl = document.createElement("option");
-    optionEl.value = key;
-    optionEl.text = key;
-    opt.appendChild(optionEl);
-  }
-  optionsDiv.appendChild(opt);
-}
-
-function updateLineTotal(el) {
-  const line = el.closest(".order-line");
-  const type = line.querySelector("select[name='order_type[]']").value;
-  const option = line.querySelector(".order_options select")?.value;
-  const qty = parseInt(line.querySelector("input[name='quantity[]']").value) || 0;
-
-  if (!type || !option) return;
-
-  const price = PRICES[type][option];
-  const amountInput = line.querySelector("input[name='amount[]']");
-  amountInput.value = price;
-
-  calculateTotal();
-}
-
-function calculateTotal() {
-  let total = 0;
-  document.querySelectorAll(".order-line").forEach(line => {  // fixed arrow function
-    const qty = parseInt(line.querySelector("input[name='quantity[]']").value) || 0;
-    const amt = parseFloat(line.querySelector("input[name='amount[]']").value) || 0;
-    total += qty * amt;
-  });
-  document.getElementById("total_amount").value = total;
-}
-
-function addOrderLine() {
-  const container = document.getElementById("orders_container");
-  const clone = container.children[0].cloneNode(true);
-  clone.querySelectorAll("input").forEach(i => i.value = i.name === "quantity[]" ? 1 : 0);  // fixed
-  clone.querySelector(".order_options").innerHTML = "";
-  clone.querySelector("select[name='order_type[]']").selectedIndex = 0;
-  container.appendChild(clone);
-}
-</script>
-</body>
-</html>
         </div>
       </div>
       <button type="button" onclick="addOrderLine()">+ Add Another Order</button>
