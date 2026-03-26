@@ -20,7 +20,7 @@
   <form method="POST" style="margin-bottom:20px;">
     <label for="date">Select Date:</label>
     <input type="date" name="date" required value="{{ selected_date }}">
-    <button type="submit" style="background:#007bff;color:white;padding:6px 12px;border-radius:6px;">Filter</button>
+    <button type="submit" style="background:#007bff;color:white;padding:8px 10px;border-radius:8px;">Filter</button>
   </form>
 
   {% if selected_date %}
@@ -34,6 +34,34 @@
             <th>Amount</th>
             <th>Visit Date</th>
             <th>Visits</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.order_name }}</td>
+            <td>₱{{ "%.2f"|format(r.amount) }}</td>
+            <td>{{ r.visit_date }}</td>
+            <td>{{ r.visit_count }}</td>
+            <td>{{ r.category }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No records found for this date.</p>
+    {% endif %}
+  {% endif %}
+</section>
+
+<footer class="footer">
+  Logged in as <strong>{{ session.get('user') }}</strong> ({{ session.get('role') | capitalize }})
+</footer>
+
+</body>
+</html>
             <th>Category</th>
           </tr>
         </thead>
