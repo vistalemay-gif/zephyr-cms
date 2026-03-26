@@ -1,6 +1,7 @@
 import sqlite3
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -43,6 +44,7 @@ def init_db():
             username TEXT UNIQUE,
             password TEXT,
             role TEXT,
+            is_approved INTEGER DEFAULT 0,
             display_name TEXT,
             full_name TEXT,
             phone TEXT,
@@ -88,10 +90,11 @@ def init_db():
     """)
 
     # Insert default users if they don't exist
-    c.execute("INSERT OR IGNORE INTO users (username,password,role) VALUES (?,?,?)",
-              ("admin", generate_password_hash("adminpass"), "admin"))
-    c.execute("INSERT OR IGNORE INTO users (username,password,role) VALUES (?,?,?)",
-              ("staff", generate_password_hash("staffpass"), "staff"))
+    # Insert default users if they don't exist
+    c.execute("INSERT OR IGNORE INTO users (username,password,role,is_approved) VALUES (?,?,?,?)",
+          ("admin", generate_password_hash("adminpass"), "admin", 1))  # admin approved
+    c.execute("INSERT OR IGNORE INTO users (username,password,role,is_approved) VALUES (?,?,?,?)",
+          ("staff", generate_password_hash("staffpass"), "staff", 1))  # staff approved for testing
 
     db.commit()
 
@@ -113,18 +116,98 @@ def splash():
 
 @app.route("/login", methods=["GET","POST"])
 def login():
+    error = None
+
     if request.method == "POST":
-        user = get_db().execute(
+        db = get_db()
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        user = db.execute(
             "SELECT * FROM users WHERE username=?",
-            (request.form["username"],)
+            (username,)
         ).fetchone()
-        if user and check_password_hash(user["password"], request.form["password"]):
+
+        if not user:
+            error = "Invalid username or password"
+
+        elif not check_password_hash(user["password"], password):
+            error = "Invalid username or password"
+
+        elif user["role"] == "staff" and user["is_approved"] == 0:
+            error = "Your account is still pending admin approval."
+
+        else:
             session["user"] = user["username"]
             session["role"] = user["role"]
             log_action(user["username"], "Logged in")
             return redirect(url_for("dashboard"))
-        return render_template("login.html", error="Invalid login")
-    return render_template("login.html")
+
+    return render_template("login.html", error=error)
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        db = get_db()
+
+        # AUTO GENERATE STAFF USERNAME
+        last_user = db.execute("""
+            SELECT username FROM users 
+            WHERE username LIKE 'staff%' 
+            ORDER BY id DESC LIMIT 1
+        """).fetchone()
+
+        if last_user:
+        # Extract number safely
+         num_part = last_user["username"].replace("staff", "")
+         last_number = int(num_part) if num_part.isdigit() else 0
+         username = f"staff{last_number + 1}"
+        else:
+         username = "staff1"
+
+        password = generate_password_hash(request.form["password"])
+
+        try:
+            db.execute(
+                "INSERT INTO users (username, password, role, is_approved) VALUES (?, ?, ?, ?)",
+                (username, password, "staff", 0)
+            )
+            db.commit()
+
+            log_action("SYSTEM", f"New account pending approval: {username}")
+            flash(f"Account created! Your username is {username}", "success")
+            return redirect(url_for("login"))
+
+        except Exception as e:
+            print(e)  # optional debug
+            flash("Error creating account!", "danger")
+
+    return render_template("register.html")
+
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        username = request.form["username"]
+        new_password = generate_password_hash(request.form["new_password"])
+
+        db = get_db()
+        user = db.execute(
+            "SELECT * FROM users WHERE username=?",
+            (username,)
+        ).fetchone()
+
+        if user:
+            db.execute(
+                "UPDATE users SET password=? WHERE username=?",
+                (new_password, username)
+            )
+            db.commit()
+            flash("Password reset successful!", "success")
+            return redirect(url_for("login"))
+        else:
+            flash("User not found!", "danger")
+
+    return render_template("forgot_password.html")
 
 @app.route("/dashboard")
 def dashboard():
@@ -134,7 +217,8 @@ def dashboard():
 
     # Fetch only active customers once
     customers = db.execute(
-        "SELECT * FROM customers WHERE archived=0 ORDER BY visit_date DESC"
+    "SELECT * FROM customers WHERE visit_date=? AND archived=0 ORDER BY visit_date DESC",
+    (today,)
     ).fetchall()
 
     total_count = db.execute(
@@ -160,14 +244,42 @@ def dashboard():
         "SELECT SUM(amount) FROM customers WHERE visit_date>=? AND archived=0",
         (month_start,)
     ).fetchone()[0] or 0
+    # GET ALL LOW FEEDBACK
+    all_feedbacks = db.execute("""
+    SELECT * FROM feedback
+    WHERE rating <= 2
+    ORDER BY created_at DESC
+    """).fetchall()
 
-    # Display name
+    bad_feedbacks = []
+
+    for fb in all_feedbacks:
+        fb_time = datetime.strptime(fb["created_at"], "%Y-%m-%d %H:%M:%S")
+
+    # Only keep feedback within last 5 minutes
+        if datetime.now() - fb_time <= timedelta(minutes=5):
+            bad_feedbacks.append(fb)
+
+# limit to 5 results
+    bad_feedbacks = bad_feedbacks[:5]
+    if bad_feedbacks:
+           avg_rating = sum([fb["rating"] for fb in bad_feedbacks]) / len(bad_feedbacks)
+           if avg_rating <= 1.5:
+            suggestion = "URGENT: Check kitchen operations and staff behavior immediately."
+           elif avg_rating <= 2:
+            suggestion = "Improve food quality and customer service."
+           else:
+            suggestion = "Monitor feedback and maintain quality."
+    else:
+        suggestion = "All good! No bad feedback."
+
+# ✅ MOVE THIS OUTSIDE (IMPORTANT!)
     user_row = db.execute(
-        "SELECT display_name FROM users WHERE username=?",
-        (session.get("user"),)
+    "SELECT display_name FROM users WHERE username=?",
+    (session.get("user"),)
     ).fetchone()
-    display_name = user_row["display_name"] if user_row else session.get("user")
 
+    display_name = user_row["display_name"] if user_row else session.get("user")
     return render_template(
         "dashboard.html",
         customers=customers,
@@ -175,7 +287,9 @@ def dashboard():
         total_earnings=total_earnings,
         daily_earnings=daily_earnings,
         monthly_earnings=monthly_earnings,
-        display_name=display_name
+        display_name=display_name,
+        bad_feedbacks=bad_feedbacks,
+        suggestion=suggestion,
     )
 
 # ---------------- ADD CUSTOMER ----------------
@@ -209,13 +323,13 @@ def add_customer():
         orders.append(f"{order_types[i]} x{qty}")
 
     # COUNT PREVIOUS VISITS (NOT MERGING RECORDS)
-    visit_count = db.execute(
-        "SELECT COUNT(*) FROM customers WHERE name=?",
-        (name,)
-    ).fetchone()[0] + 1
+    visit_count = db.execute("""
+    SELECT COUNT(DISTINCT visit_date)
+    FROM customers
+    WHERE name=?
+""", (name,)).fetchone()[0] + 1
 
-    # CATEGORY LOGIC
-    category = "Old" if visit_count > 3 else "New"
+    category = "Old" if visit_count >= 3 else "New"
 
     # ALWAYS INSERT NEW ROW
     db.execute("""
@@ -245,16 +359,62 @@ def customer_records():
     records = db.execute("SELECT * FROM customers WHERE visit_date=? ORDER BY visit_date DESC", (selected_date,)).fetchall() if selected_date else []
     return render_template("customer_records.html", records=records, selected_date=selected_date)
 
+@app.route("/old_records", methods=["GET","POST"])
+def old_records():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    db = get_db()
+    selected_date = request.form.get("date")
+
+    records = []
+    if selected_date:
+        records = db.execute(
+            "SELECT * FROM customers WHERE visit_date=?",
+            (selected_date,)
+        ).fetchall()
+
+    return render_template("old_records.html", records=records)
+
 # ---------------- FEEDBACK ----------------
 @app.route("/feedback", methods=["GET","POST"])
 def feedback():
     db = get_db()
-    if request.method=="POST":
-        db.execute("""INSERT INTO feedback (name,order_name,rating,comment,created_at) VALUES (?,?,?,?,?)""",
-                   (request.form["name"], request.form["order"], request.form["rating"], request.form["comment"],
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
+    if request.method == "POST":
+        name = request.form.get("name")
+        order = request.form.get("order")
+        rating = int(request.form.get("rating"))
+        comment = request.form.get("comment")
+
+        db.execute("""
+            INSERT INTO feedback (name,order_name,rating,comment,created_at)
+            VALUES (?,?,?,?,?)
+        """, (
+            name, order, rating, comment,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ))
+
+        # 🚨 AUTO ACTION FOR LOW FEEDBACK
+        if rating <= 2:
+            db.execute("""
+                INSERT INTO activity_logs (user, action, timestamp)
+                VALUES (?, ?, ?)
+            """, (
+                "SYSTEM",
+                f"ALERT: Low feedback from {name} (Rating: {rating}) - {comment}",
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ))
+
+            db.execute("""
+                UPDATE customers
+                SET notes = ?
+                WHERE name = ?
+            """, ("Needs Attention", name))
+
         db.commit()
         return "Thank you for your feedback!"
+
     return render_template("feedback.html")
 
 @app.route("/view_feedback")
@@ -340,6 +500,32 @@ def activity_logs():
     logs = db.execute("SELECT * FROM activity_logs ORDER BY timestamp DESC").fetchall()
     return render_template("activity_logs.html", logs=logs)
 
+@app.route("/approve_users")
+def approve_users():
+    if "user" not in session or session.get("role") != "admin":
+        return redirect(url_for("dashboard"))
+
+    db = get_db()
+    users = db.execute("""
+    SELECT id, username, role, is_approved 
+    FROM users 
+    WHERE is_approved = 0
+    """).fetchall()
+
+    return render_template("approve_users.html", users=users)
+
+@app.route("/approve_user/<int:user_id>", methods=["POST"])
+def approve_user(user_id):
+    if "user" not in session or session.get("role") != "admin":
+        return redirect(url_for("dashboard"))
+
+    db = get_db()
+    db.execute("UPDATE users SET is_approved=1 WHERE id=?", (user_id,))
+    db.commit()
+
+    log_action(session["user"], f"Approved user ID {user_id}")
+
+    return redirect(url_for("approve_users"))
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
