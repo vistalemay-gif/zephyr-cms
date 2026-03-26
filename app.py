@@ -11,7 +11,7 @@ DATABASE = "/tmp/data.db" if os.environ.get("RENDER") else os.path.join(APP_DIR,
 
 app = Flask(__name__)
 app.secret_key = "replace_with_a_random_secret"
-
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 # ---------------- MENU PRICES ----------------
 MENU_PRICES = {
     "budbod": {"pork": 85, "chicken": 85, "hungarian": 85, "rice": 15, "egg": 15},
@@ -217,9 +217,9 @@ def dashboard():
 
     # Fetch only active customers once
     customers = db.execute(
-    "SELECT * FROM customers WHERE visit_date=? AND archived=0 ORDER BY visit_date DESC",
-    (today,)
-    ).fetchall()
+      "SELECT * FROM customers WHERE visit_date=? AND archived=0 ORDER BY visit_date DESC",
+      (today,)
+      ).fetchall()
 
     total_count = db.execute(
         "SELECT COUNT(*) FROM customers WHERE archived=0"
@@ -279,7 +279,11 @@ def dashboard():
     (session.get("user"),)
     ).fetchone()
 
-    display_name = user_row["display_name"] if user_row else session.get("user")
+    display_name = (
+    user_row["display_name"]
+    if user_row and user_row["display_name"]
+    else session.get("user")
+    )
     return render_template(
         "dashboard.html",
         customers=customers,
@@ -293,17 +297,17 @@ def dashboard():
     )
 
 # ---------------- ADD CUSTOMER ----------------
-@app.route("/add_customer", methods=["GET"])
-def add_customer_page():
-    if "user" not in session:
-        return redirect(url_for("login"))
+@app.route("/add_customer", methods=["GET"]) 
+def add_customer_page(): 
+    if "user" not in session: 
+     return redirect(url_for("login")) 
     return render_template("add_customer.html")
 
 @app.route("/add_customer", methods=["POST"])
 def add_customer():
     if "user" not in session:
         return redirect(url_for("login"))
-
+ 
     db = get_db()
 
     name = request.form.get("name")
@@ -428,12 +432,23 @@ def view_feedback():
 def profile():
     if "user" not in session: return redirect(url_for("login"))
     db = get_db()
-    if request.method=="POST":
-        db.execute("UPDATE users SET full_name=?, phone=?, email=? WHERE username=?",
-                   (request.form.get("full_name"), request.form.get("phone"), request.form.get("email"), session["user"]))
-        db.commit()
-        flash("Profile updated successfully!", "success")
-    user = db.execute("SELECT username,role,full_name,phone,email FROM users WHERE username=?",(session["user"],)).fetchone()
+    if request.method == "POST":
+       db.execute("""
+           UPDATE users 
+           SET display_name=?, full_name=?, phone=?, email=? 
+           WHERE username=?
+        """, (
+           request.form.get("display_name"),
+           request.form.get("full_name"),
+           request.form.get("phone"),
+           request.form.get("email"),
+           session["user"]))
+       db.commit()
+       return redirect(url_for("dashboard"))
+    user = db.execute("""
+     SELECT username, role, display_name, full_name, phone, email 
+     FROM users WHERE username=?
+     """, (session["user"],)).fetchone()
     return render_template("profile.html", user=user)
 
 # ---------------- CHANGE PASSWORD ----------------
