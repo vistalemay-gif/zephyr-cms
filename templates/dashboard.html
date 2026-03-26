@@ -9,9 +9,9 @@
 <body>
 
 <header class="header">
-  <h1>Busog Pinas Dashboard</h1>
+  <h1>🍔Busog Pinas Dashboard</h1>
   <div class="dashboard-greeting">
-    Hello {{ session.get('role') | capitalize }} ({{ display_name }})
+    {{ session.get('role') | capitalize }} ({{ display_name }})
   </div>
   <div class="dashboard-actions">
     <a href="{{ url_for('add_customer_page') }}" class="btn">
