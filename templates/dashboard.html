@@ -9,7 +9,7 @@
 <body>
 
 <header class="header">
-  <h1>🍔 Busog Pinas Dashboard</h1>
+  <h1>Busog Pinas Dashboard</h1>
   <div class="dashboard-greeting">
     Hello {{ session.get('role') | capitalize }} ({{ display_name }})
   </div>
@@ -17,10 +17,11 @@
     <a href="{{ url_for('add_customer_page') }}" class="btn">
     ➕ Add Customer
 </a>
-    <a href="{{ url_for('customer_records') }}">📅 View Old Records</a>
+    <a href="{{ url_for('customer_records') }}">📅 Old Records</a>
     <a href="{{ url_for('view_feedback') }}">💬 Feedback</a>
     <a href="{{ url_for('profile') }}">👤 Profile</a>
     {% if session.get('role') == "admin" %}
+    <a href="{{ url_for('approve_users') }}">✅ Approvals</a>
       <a href="{{ url_for('archived_customers') }}">📦 Archived</a>
       <a href="{{ url_for('activity_logs') }}">📜 Logs</a>
     {% endif %}
@@ -29,24 +30,46 @@
 </header>
 
 <section class="stats-bar">
+
   <div class="stat-card">
     <span>Customers Today</span>
     <strong>{{ today_count }}</strong>
   </div>
+
   <div class="stat-card">
     <span>Total Earnings</span>
     <strong>₱{{ total_earnings }}</strong>
   </div>
+
   <div class="stat-card">
     <span>Today</span>
     <strong>₱{{ daily_earnings }}</strong>
   </div>
+
   <div class="stat-card">
     <span>This Month</span>
     <strong>₱{{ monthly_earnings }}</strong>
   </div>
-</section>
 
+  <!-- 🚨 BAD FEEDBACK (SMALL BOX) -->
+  <div class="feedback-box bad-box" id="badBox">
+    <h4>⚠ Bad</h4>
+    {% if bad_feedbacks %}
+        {% for fb in bad_feedbacks %}
+            <p><b>{{ fb.name }}</b> ({{ fb.rating }})</p>
+        {% endfor %}
+    {% else %}
+        <p>None</p>
+    {% endif %}
+  </div>
+
+  <!-- 💡 SUGGESTION (SMALL BOX) -->
+  <div class="feedback-box suggest-box" id="suggestBox">
+    <h4>💡 Tip</h4>
+    <p>{{ suggestion }}</p>
+  </div>
+
+</section>
 <section class="dashboard-section">
   <h2>Today's Customers</h2>
 
@@ -98,6 +121,15 @@
 <footer class="footer">
   Logged in as <strong>{{ session.get('user') }}</strong> ({{ session.get('role') | capitalize }})
 </footer>
+<script>
+  // Hide feedback after 5 minutes (300000 ms)
+  setTimeout(function() {
+    let bad = document.getElementById("badBox");
+    let suggest = document.getElementById("suggestBox");
 
+    if (bad) bad.style.display = "none";
+    if (suggest) suggest.style.display = "none";
+  }, 300000);
+</script>
 </body>
 </html>
